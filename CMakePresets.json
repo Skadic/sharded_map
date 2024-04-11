@@ -23,6 +23,10 @@
   ],
   "buildPresets": [
     {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
       "name": "release",
       "configurePreset": "default",
       "configuration": "Release"
