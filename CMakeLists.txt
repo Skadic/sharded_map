@@ -16,3 +16,7 @@ option(SHARDED_MAP_BUILD_TESTS "Build sharded hash map tests." OFF)
 add_library(sharded_map INTERFACE)
 target_include_directories(sharded_map
                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+if(SHARDED_MAP_BUILD_TESTS)
+  add_subdirectory(test)
+endif()

@@ -60,9 +60,9 @@ template<std::copy_constructible K, std::move_constructible V>
 struct Overwrite {
   using InputValue = V;
 
-  inline static void update(K &, V &value, V &&input_value) { value = input_value; }
+  inline static void update(const K &, V &value, V &&input_value) { value = input_value; }
 
-  inline static V init(K &, V &&input_value) { return input_value; }
+  inline static V init(const K &, V &&input_value) { return input_value; }
 };
 
 ///
@@ -75,9 +75,9 @@ struct Overwrite {
 template<std::copy_constructible K, std::move_constructible V>
 struct Keep {
   using InputValue = V;
-  inline static void update(K &, V &, V &&) {}
+  inline static void update(const K &, V &, V &&) {}
 
-  inline static V init(K &, V &&input_value) { return input_value; }
+  inline static V init(const K &, V &&input_value) { return input_value; }
 };
 
 } // namespace update_functions
@@ -105,10 +105,10 @@ struct Keep {
 /// @tparam UpdateFn The update function deciding how to insert or update values in the map.
 template<std::copy_constructible K,
          std::move_constructible V,
-         template<typename, typename> typename SeqHashMapType = std::unordered_map,
-         UpdateFunction<K, V> UpdateFn                        = update_functions::Overwrite<K, V>>
+         template<typename, typename, typename...> typename SeqHashMapType = std::unordered_map,
+         UpdateFunction<K, V> UpdateFn                                     = update_functions::Overwrite<K, V>>
   requires std::movable<typename UpdateFn::InputValue>
-class SyncShardedMap {
+class ShardedMap {
   /// The sequential backing hash map type
   using SeqHashMap = SeqHashMapType<K, V>;
 
@@ -153,21 +153,22 @@ class SyncShardedMap {
   constexpr static std::invocable auto FN = []() noexcept {};
 
   /// @brief Thread barrier to synchronize threads when handling queues.
-  std::barrier<decltype(FN)> barrier_;
+  std::unique_ptr<std::barrier<decltype(FN)>> barrier_;
 
+public:
   /// @brief Creates a new sharded map.
   ///
   /// @param thread_count The exact number of threads working on this map. Thread ids must be 0, 1, ..., thread_count-1.
   /// @param queue_capacity The maximum amount of elements allowed in each queue.
   ///
-  SyncShardedMap(size_t thread_count, size_t queue_capacity) :
+  ShardedMap(size_t thread_count, size_t queue_capacity) :
       thread_count_(thread_count),
       map_(),
       task_queue_(),
       task_count_(),
       threads_handling_queue_(0),
       queue_capacity_(queue_capacity),
-      barrier_(static_cast<ptrdiff_t>(thread_count), FN) {
+      barrier_(std::make_unique<std::barrier<decltype(FN)>>(static_cast<ptrdiff_t>(thread_count), FN)) {
     map_.reserve(thread_count);
     task_queue_.reserve(thread_count);
     task_count_ = std::span<std::atomic_size_t>(new std::atomic_size_t[thread_count], thread_count);
@@ -178,16 +179,18 @@ class SyncShardedMap {
     }
   }
 
-  ~SyncShardedMap() {
+  ~ShardedMap() {
     delete[] task_count_.data();
     for (auto &queue : task_queue_) {
       delete[] queue.data();
     }
   }
 
+  void reset_barrier() { barrier_.reset(new std::barrier<decltype(FN)>{static_cast<ptrdiff_t>(thread_count_), FN}); }
+
   class Shard {
     // @brief The sharded map this shard belongs to.
-    SyncShardedMap &sharded_map_;
+    ShardedMap &sharded_map_;
     // @brief This thread's id.
     const size_t thread_id_;
     /// @brief This shard's local hash map.
@@ -204,7 +207,7 @@ class SyncShardedMap {
     /// @param sharded_map The sharded map to which the shard belongs.
     /// @param thread_id The thread's id. Must be less than `thread_count` in the sharded map.
     ///
-    Shard(SyncShardedMap &sharded_map, size_t thread_id) :
+    Shard(ShardedMap &sharded_map, size_t thread_id) :
         sharded_map_(sharded_map),
         thread_id_(thread_id),
         map_(sharded_map_.map_[thread_id]),
@@ -234,16 +237,20 @@ class SyncShardedMap {
     ///
     /// This thread will wait until all other threads also call this method before starting to handle the queues.
     ///
-    void handle_queue_sync() {
-      // If this value is >0 then other threads will also handle their queue
-      // when trying to insert
-      sharded_map_.threads_handling_queue_.fetch_add(1, mem::acq_rel);
-      sharded_map_.barrier_.arrive_and_wait();
+    void handle_queue_sync(bool cause_wait = true) {
+      if (cause_wait) {
+        // If this value is >0 then other threads will also handle their queue
+        // when trying to insert
+        sharded_map_.threads_handling_queue_.fetch_add(1, mem::acq_rel);
+      }
+      sharded_map_.barrier_->arrive_and_wait();
 
       handle_queue_async();
 
-      sharded_map_.threads_handling_queue_.fetch_sub(1, mem::acq_rel);
-      sharded_map_.barrier_.arrive_and_wait();
+      if (cause_wait) {
+        sharded_map_.threads_handling_queue_.fetch_sub(1, mem::acq_rel);
+      }
+      sharded_map_.barrier_->arrive_and_wait();
     }
 
     ///
@@ -307,7 +314,7 @@ class SyncShardedMap {
     ///
     /// @param key The key of the value to insert.
     /// @param value The value to associate with the key.
-    inline void insert(K &key, InputValue value) { insert(QueueStoredValue(key, value)); }
+    inline void insert(const K &key, InputValue value) { insert(QueueStoredValue(key, value)); }
   };
 
   ///
@@ -399,7 +406,7 @@ class SyncShardedMap {
   }
 
   /// @brief Return a reference to the thread barrier used by this map.
-  std::barrier<decltype(FN)> &barrier() { return barrier_; }
+  std::barrier<decltype(FN)> &barrier() { return *barrier_; }
 
 }; // namespace pasta
 
