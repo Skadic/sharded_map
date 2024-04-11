@@ -236,11 +236,13 @@ public:
     /// queue.
     ///
     /// This thread will wait until all other threads also call this method before starting to handle the queues.
+    /// 
+    /// @param cause_wait If true, this will force other threads to handle their queues when they call insert.
     ///
     void handle_queue_sync(bool cause_wait = true) {
+      // If we want to cause other threads to wait, we increment the number of threads handling the queue
+      // This will cause other threads to wait when they call insert if >0
       if (cause_wait) {
-        // If this value is >0 then other threads will also handle their queue
-        // when trying to insert
         sharded_map_.threads_handling_queue_.fetch_add(1, mem::acq_rel);
       }
       sharded_map_.barrier_->arrive_and_wait();

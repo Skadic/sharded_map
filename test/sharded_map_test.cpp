@@ -34,18 +34,26 @@ TEST_CASE("sharded map basic insertions", "[sharded] [insertions]") {
   // Insert tuples (i,i) into the map
 #pragma omp parallel num_threads(NUM_THREADS)
   {
+    // Create a shard for each thread
     Map::Shard shard   = map.get_shard(omp_get_thread_num());
     auto      &barrier = map.barrier();
 
+    // Insert all values
     for (size_t i = 0; i < values.size(); i++) {
       shard.insert(i, i);
     }
 
+    // Mark that another thread is done
     threads_done++;
 
+    // We wait for the other threads to be done.
+    // As queues might still fill up, each thread handles its queue
+    // However, we won't force the other threads to handle their queues
     while (threads_done.load() < NUM_THREADS) {
       shard.handle_queue_sync(false);
     }
+    // This thread is completely done and we won't make the other threads wait for this one,
+    // if they are still stuck in the loop above
     barrier.arrive_and_drop();
   }
 
@@ -57,36 +65,8 @@ TEST_CASE("sharded map basic insertions", "[sharded] [insertions]") {
       REQUIRE(value->second == i);
     }
   }
-}
 
-TEST_CASE("sharded map updates", "[sharded] [updates]") {
-  using Map = ShardedMap<size_t, size_t, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
-  Map map(NUM_THREADS, 128);
-
-  constexpr size_t NUM_ELEMS = 10000;
-
-  std::vector<int> values(NUM_ELEMS);
-  std::iota(values.begin(), values.end(), 0);
-  std::atomic_size_t threads_done;
-
-  // Insert tuples (i,i) into the map
-#pragma omp parallel num_threads(NUM_THREADS)
-  {
-    Map::Shard shard   = map.get_shard(omp_get_thread_num());
-    auto      &barrier = map.barrier();
-
-    for (size_t i = 0; i < values.size(); i++) {
-      shard.insert(i, i);
-    }
-
-    threads_done++;
-
-    while (threads_done.load() < NUM_THREADS) {
-      shard.handle_queue_sync(false);
-    }
-    barrier.arrive_and_drop();
-  }
-
+  // calling arrive_and_drop modifies the barrier permanently. see the docs for std::barrier on cppreference
   map.reset_barrier();
   threads_done = 0;
 
