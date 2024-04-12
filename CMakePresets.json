@@ -10,42 +10,49 @@
       "name": "default",
       "displayName": "Default",
       "description": "Default build options",
+      "hidden": true,
       "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_CXX_FLAGS": "-fopenmp -Wall -Wextra -pedantic -Werror -march=native -fdiagnostics-color=always",
         "CMAKE_CXX_FLAGS_RELEASE": "-DNDEBUG -O3",
         "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-DDEBUG -g -O3 -lprofiler",
-        "CMAKE_CXX_FLAGS_DEBUG": "-DDEBUG -O0 -g -fsanitize=address -fsanitize=leak -fsanitize=undefined",
+        "CMAKE_CXX_FLAGS_DEBUG": "-DDEBUG -O0 -g -fsanitize=address -fsanitize=leak -fsanitize=undefined"
+      }
+    },
+    {
+      "name": "test",
+      "displayName": "Test",
+      "description": "Build Tests",
+      "inherits": "default",
+      "cacheVariables": {
         "SHARDED_MAP_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "examples",
+      "displayName": "Examples",
+      "description": "Build Examples",
+      "inherits": "default",
+      "cacheVariables": {
+        "SHARDED_MAP_BUILD_EXAMPLES": "ON"
       }
     }
   ],
   "buildPresets": [
     {
-      "name": "default",
-      "configurePreset": "default"
+      "name": "test",
+      "configurePreset": "test"
     },
     {
-      "name": "release",
-      "configurePreset": "default",
-      "configuration": "Release"
-    },
-    {
-      "name": "relwithdeb",
-      "configurePreset": "default",
-      "configuration": "RelWithDebInfo"
-    },
-    {
-      "name": "debug",
-      "configurePreset": "default",
-      "configuration": "Debug"
+      "name": "examples",
+      "configurePreset": "examples"
     }
   ],
   "testPresets": [
     {
       "name": "default",
-      "configurePreset": "default",
+      "configurePreset": "test",
       "output": {
         "outputOnFailure": true
       },

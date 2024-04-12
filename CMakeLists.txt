@@ -12,6 +12,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS
 
 # Build tests
 option(SHARDED_MAP_BUILD_TESTS "Build sharded hash map tests." OFF)
+# Build tests
+option(SHARDED_MAP_BUILD_EXAMPLES "Build sharded hash map examples." OFF)
 
 add_library(sharded_map INTERFACE)
 target_include_directories(sharded_map
@@ -19,4 +21,8 @@ target_include_directories(sharded_map
 
 if(SHARDED_MAP_BUILD_TESTS)
   add_subdirectory(test)
+endif()
+
+if(SHARDED_MAP_BUILD_EXAMPLES)
+  add_subdirectory(examples)
 endif()

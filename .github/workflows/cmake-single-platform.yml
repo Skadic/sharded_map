@@ -24,9 +24,9 @@ jobs:
     - name: Install latest CMake and Ninja
       uses: lukka/get-cmake@latest
     - name: Configure
-      run: cmake --preset=default
+      run: cmake --preset=test
     - name: Build
-      run: cmake --build --preset=default --config=${{env.BUILD_TYPE}}
+      run: cmake --build --preset=test --config=${{env.BUILD_TYPE}}
     - name: Test
       working-directory: ${{github.workspace}}/build
       # Execute tests defined by the CMake configuration.
