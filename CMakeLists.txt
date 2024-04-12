@@ -20,6 +20,7 @@ target_include_directories(sharded_map
                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(SHARDED_MAP_BUILD_TESTS)
+  enable_testing()
   add_subdirectory(test)
 endif()
 
