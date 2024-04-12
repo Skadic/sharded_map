@@ -25,7 +25,7 @@ TEST_CASE("sharded map basic insertions", "[sharded] [insertions]") {
   using Map = ShardedMap<size_t, size_t, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
   Map map(NUM_THREADS, 128);
 
-  constexpr size_t NUM_ELEMS = 10000;
+  constexpr size_t NUM_ELEMS = 100000;
 
   std::vector<int> values(NUM_ELEMS);
   std::iota(values.begin(), values.end(), 0);
