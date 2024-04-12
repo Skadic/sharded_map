@@ -1,23 +1,12 @@
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
-#include <iostream>
 #include <numeric>
 #include <omp.h>
-#include <ranges>
 #include <sharded_map/sharded_map.hpp>
 #include <unordered_map>
 
 constexpr size_t NUM_THREADS = 4;
-
-unsigned int Factorial(unsigned int number) { return number <= 1 ? number : Factorial(number - 1) * number; }
-
-TEST_CASE("Factorials are computed", "[factorial]") {
-  REQUIRE(Factorial(1) == 1);
-  REQUIRE(Factorial(2) == 2);
-  REQUIRE(Factorial(3) == 6);
-  REQUIRE(Factorial(10) == 3628800);
-}
 
 using namespace sharded_map;
 
