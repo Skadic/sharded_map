@@ -27,7 +27,7 @@ You can build and run tests using these commands:
 ```bash
 cmake --preset=test
 cmake --build --preset=test --config=Release
-./build/test/Release/sharded_map_test
+ctest --preset=default
 ```
 
 ## Example
