@@ -40,31 +40,11 @@ ctest --preset=default
 using namespace sharded_map;
 
 int main() {
-  using Map = ShardedMap<int, char, std::unordered_map, update_functions::Overwrite<int, char>>;
+  using Map = ShardedMap<int, char, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
 
-  Map                map(4, 128);
-  std::atomic_size_t threads_done;
-
-#pragma omp parallel num_threads(4)
-  {
-    const size_t thread_id = omp_get_thread_num();
-    const size_t start     = thread_id * 250'000;
-    const size_t end       = (thread_id + 1) * 250'000;
-    Map::Shard   shard     = map.get_shard(thread_id);
-
-    auto &barrier = map.barrier();
-
-    for (size_t i = start; i < end; i++) {
-      shard.insert(i, i * 2);
-    }
-
-    threads_done++;
-
-    while (threads_done.load() < 4) {
-      shard.handle_queue_sync(false);
-    }
-    barrier.arrive_and_drop();
-  }
+  Map map(4, 128);
+  // Iterate in parallel from 0 to 100'000 and insert the pair (i, 2*i) for each index
+  map.batch_insert(0, 100'000, [&s](size_t i) { return std::pair(i, 2*i); });
 }
 
 ```

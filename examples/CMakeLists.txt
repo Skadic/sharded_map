@@ -1,2 +1,8 @@
-add_executable(char_map char_map.cpp)
-target_link_libraries(char_map PRIVATE sharded_map)
+add_executable(manual_insertion manual_insertion.cpp)
+target_link_libraries(manual_insertion PRIVATE sharded_map)
+
+add_executable(batch_insertion batch_insertion.cpp)
+target_link_libraries(batch_insertion PRIVATE sharded_map)
+
+add_executable(stateful_batch_insertion stateful_batch_insertion.cpp)
+target_link_libraries(stateful_batch_insertion PRIVATE sharded_map)
