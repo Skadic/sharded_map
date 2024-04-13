@@ -1,22 +1,25 @@
+#include <algorithm>
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers.hpp>
+#include <catch2/matchers/catch_matchers_range_equals.hpp>
 #include <cstddef>
 #include <numeric>
 #include <omp.h>
 #include <sharded_map/sharded_map.hpp>
 #include <unordered_map>
 
+constexpr size_t NUM_ELEMS   = 100'000;
 constexpr size_t NUM_THREADS = 4;
 
 using namespace sharded_map;
 
-TEST_CASE("sharded map basic insertions", "[sharded] [insertions]") {
-  using Map = ShardedMap<size_t, size_t, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
+TEST_CASE("sharded map basic insertions", "[sharded]") {
+  using Map =
+      ShardedMap<size_t, size_t, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
   Map map(NUM_THREADS, 128);
 
-  constexpr size_t NUM_ELEMS = 100000;
-
-  std::vector<int> values(NUM_ELEMS);
+  std::vector<size_t> values(NUM_ELEMS);
   std::iota(values.begin(), values.end(), 0);
   std::atomic_size_t threads_done;
 
@@ -29,7 +32,7 @@ TEST_CASE("sharded map basic insertions", "[sharded] [insertions]") {
 
     // Insert all values
     for (size_t i = 0; i < values.size(); i++) {
-      shard.insert(i, i);
+      shard.insert(i, values[i]);
     }
 
     // Mark that another thread is done
@@ -41,25 +44,45 @@ TEST_CASE("sharded map basic insertions", "[sharded] [insertions]") {
     while (threads_done.load() < NUM_THREADS) {
       shard.handle_queue_sync(false);
     }
+    // Empty the rest of the queue. All threads are done with the insert loop, so there won't be any
+    // more insertions.
+    shard.handle_queue_async();
     // This thread is completely done and we won't make the other threads wait for this one,
     // if they are still stuck in the loop above
     barrier.arrive_and_drop();
   }
 
   SECTION("size equal to the number of values after insert") { REQUIRE(map.size() == NUM_ELEMS); }
+  SECTION("queues are empty after insert") {
+    const auto   loads    = map.queue_loads();
+    const size_t max_load = *std::max_element(loads.begin(), loads.end());
+
+    REQUIRE(max_load == 0);
+  }
   SECTION("all values are inserted") {
+    std::vector<size_t> extracted_values(NUM_ELEMS);
     for (size_t i = 0; i < NUM_ELEMS; i++) {
       auto value = map.find(i);
-      REQUIRE(value != map.end());
-      REQUIRE(value->second == i);
+      if (value != map.end()) {
+        extracted_values[i] = value->second;
+      } else {
+        FAIL("entry for " << i << " does not exist");
+      }
     }
+    REQUIRE_THAT(extracted_values, Catch::Matchers::UnorderedRangeEquals(values));
   }
 
-  // calling arrive_and_drop modifies the barrier permanently. see the docs for std::barrier on cppreference
+  // calling arrive_and_drop modifies the barrier permanently. see the docs for std::barrier on
+  // cppreference
   map.reset_barrier();
   threads_done = 0;
 
-  // We insert the tuples (i, 2*i). Since we used the Overwrite Update function, this should overwrite the values
+  for (size_t &v : values) {
+    v *= 2;
+  }
+
+  // We insert the tuples (i, 2*i). Since we used the Overwrite Update function, this should
+  // overwrite the values
 #pragma omp parallel num_threads(NUM_THREADS)
   {
     Map::Shard shard   = map.get_shard(omp_get_thread_num());
@@ -74,15 +97,162 @@ TEST_CASE("sharded map basic insertions", "[sharded] [insertions]") {
     while (threads_done.load() < NUM_THREADS) {
       shard.handle_queue_sync(false);
     }
+    shard.handle_queue_async();
     barrier.arrive_and_drop();
   }
 
   SECTION("size equal to the number of values after updates") { REQUIRE(map.size() == NUM_ELEMS); }
-  SECTION("all values are inserted") {
+  SECTION("queues are empty after updates") {
+    const auto   loads    = map.queue_loads();
+    const size_t max_load = *std::max_element(loads.begin(), loads.end());
+
+    REQUIRE(max_load == 0);
+  }
+  SECTION("all values are updated") {
+    std::vector<size_t> extracted_values(NUM_ELEMS);
     for (size_t i = 0; i < NUM_ELEMS; i++) {
       auto value = map.find(i);
-      REQUIRE(value != map.end());
-      REQUIRE(value->second == 2 * i);
+      if (value != map.end()) {
+        extracted_values[i] = value->second;
+      } else {
+        FAIL("entry for " << i << " does not exist");
+      }
     }
+    REQUIRE_THAT(extracted_values, Catch::Matchers::UnorderedRangeEquals(values));
+  }
+}
+
+TEST_CASE("sharded map batch insertions", "[sharded] [batch]") {
+  using Map =
+      ShardedMap<size_t, size_t, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
+  Map map(NUM_THREADS, 128);
+
+  std::vector<size_t> values(NUM_ELEMS);
+  std::iota(values.begin(), values.end(), 0);
+
+  map.batch_insert(0, NUM_ELEMS, [&values](size_t i) { return std::pair(i, values[i]); });
+
+  SECTION("size equal to the number of values after insert") { REQUIRE(map.size() == NUM_ELEMS); }
+  SECTION("queues are empty after insert") {
+    const auto   loads    = map.queue_loads();
+    const size_t max_load = *std::max_element(loads.begin(), loads.end());
+
+    REQUIRE(max_load == 0);
+  }
+  SECTION("all values are inserted") {
+    std::vector<size_t> extracted_values(NUM_ELEMS);
+    for (size_t i = 0; i < NUM_ELEMS; i++) {
+      auto value = map.find(i);
+      if (value != map.end()) {
+        extracted_values[i] = value->second;
+      } else {
+        FAIL("entry for " << i << " does not exist");
+      }
+    }
+    REQUIRE_THAT(extracted_values, Catch::Matchers::UnorderedRangeEquals(values));
+  }
+
+  for (size_t &v : values) {
+    v *= 2;
+  }
+
+  map.batch_insert(0, NUM_ELEMS, [&values](size_t i) { return std::pair(i, values[i]); });
+
+  SECTION("size equal to the number of values after updates") { REQUIRE(map.size() == NUM_ELEMS); }
+  SECTION("queues are empty after updates") {
+    const auto   loads    = map.queue_loads();
+    const size_t max_load = *std::max_element(loads.begin(), loads.end());
+
+    REQUIRE(max_load == 0);
+  }
+  SECTION("all values are updated") {
+    std::vector<size_t> extracted_values(NUM_ELEMS);
+    for (size_t i = 0; i < NUM_ELEMS; i++) {
+      auto value = map.find(i);
+      if (value != map.end()) {
+        extracted_values[i] = value->second;
+      } else {
+        FAIL("entry for " << i << " does not exist");
+      }
+    }
+    REQUIRE_THAT(extracted_values, Catch::Matchers::UnorderedRangeEquals(values));
+  }
+}
+
+TEST_CASE("sharded map batch state insertions", "[sharded] [batch] [state]") {
+  using Map =
+      ShardedMap<size_t, size_t, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
+  Map map(NUM_THREADS, 128);
+
+  constexpr size_t SEGMENT_SIZE = util::ceil_div(NUM_ELEMS, NUM_THREADS);
+
+  std::vector<size_t> values(NUM_ELEMS);
+  {
+    size_t i = 0;
+    std::generate(values.begin(), values.end(), [&i]() { return i++ % SEGMENT_SIZE; });
+  }
+
+  map.batch_insert(
+      0,
+      NUM_ELEMS,
+      [](size_t) -> size_t { return 0; },
+      [](size_t i, size_t &state) {
+        const size_t old = state;
+        state++;
+        return std::pair(i, old);
+      });
+
+  SECTION("size equal to the number of values after insert") { REQUIRE(map.size() == NUM_ELEMS); }
+  SECTION("queues are empty after insert") {
+    const auto   loads    = map.queue_loads();
+    const size_t max_load = *std::max_element(loads.begin(), loads.end());
+
+    REQUIRE(max_load == 0);
+  }
+  SECTION("all values are inserted") {
+    std::vector<size_t> extracted_values(NUM_ELEMS);
+    for (size_t i = 0; i < NUM_ELEMS; i++) {
+      auto value = map.find(i);
+      if (value != map.end()) {
+        extracted_values[i] = value->second;
+      } else {
+        FAIL("entry for " << i << " does not exist");
+      }
+    }
+    REQUIRE_THAT(extracted_values, Catch::Matchers::UnorderedRangeEquals(values));
+  }
+
+  for (size_t &v : values) {
+    v *= 2;
+  }
+
+  map.batch_insert(
+      0,
+      NUM_ELEMS,
+      [](size_t) -> size_t { return 0; },
+      [](size_t i, size_t &state) {
+        const size_t old = state;
+        state++;
+        return std::pair(i, 2 * old);
+      });
+
+  SECTION("size equal to the number of values after updates") { REQUIRE(map.size() == NUM_ELEMS); }
+  SECTION("queues are empty after updates") {
+    const auto   loads    = map.queue_loads();
+    const size_t max_load = *std::max_element(loads.begin(), loads.end());
+
+    REQUIRE(max_load == 0);
+  }
+  SECTION("all values are updated") {
+    std::vector<size_t> extracted_values(NUM_ELEMS);
+    for (size_t i = 0; i < NUM_ELEMS; i++) {
+      auto value = map.find(i);
+      if (value != map.end()) {
+        extracted_values[i] = value->second;
+      } else {
+        FAIL("entry for " << i << " does not exist");
+      }
+    }
+    REQUIRE_THAT(extracted_values, Catch::Matchers::UnorderedRangeEquals(values));
   }
 }

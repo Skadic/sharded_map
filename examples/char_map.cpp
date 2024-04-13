@@ -1,6 +1,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <concepts>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
@@ -18,10 +19,12 @@ struct CharMetric {
   size_t count;
 };
 
-/// This is an update function that counts how often a character appears and the first text position at which it
-/// appears. It is an update function for a Sharded Map with keys of type char and values of type CharMetric
+/// This is an update function that counts how often a character appears and the first text position
+/// at which it appears. It is an update function for a Sharded Map with keys of type char and
+/// values of type CharMetric
 ///
-/// Check out the sharded_map::update_functions namespace for some predefined basic update functions.
+/// Check out the sharded_map::update_functions namespace for some predefined basic update
+/// functions.
 struct FindChar {
   /// This is the type that is the parameter to insert calls.
   /// When we report a character, we want its text position, which is a size_t.
@@ -29,11 +32,11 @@ struct FindChar {
 
   /// This function is called when a char already exists in the map.
   ///
-  /// The arguments are the key, a reference to the associated value saved in the map, and the value that was just
-  /// inserted. You can modify the reference to the value to your heart's content.
+  /// The arguments are the key, a reference to the associated value saved in the map, and the value
+  /// that was just inserted. You can modify the reference to the value to your heart's content.
   ///
-  /// In our case, the key is a char, the associated value is the char metric and the inserted value is the text
-  /// position. Here we don't need the key, so we just ignore it.
+  /// In our case, the key is a char, the associated value is the char metric and the inserted value
+  /// is the text position. Here we don't need the key, so we just ignore it.
   static void update(const char &, CharMetric &metric, InputValue &&position) {
     // Increment number of occurrences of char
     metric.count++;
@@ -47,14 +50,17 @@ struct FindChar {
   /// The arguments are the key and the inserted value.
   ///
   /// In our case, if a character appears for the first time, it of course appeared once so far.
-  static CharMetric init(const char &key, InputValue &&position) { return CharMetric{key, position, 1}; }
+  static CharMetric init(const char &key, InputValue &&position) {
+    return CharMetric{key, position, 1};
+  }
 };
 
 using namespace sharded_map;
 
 // Check that FindChar actually fulfills the "UpdateFunction" concept
 // for a sharded map with keys of type char and values of type CharMetric
-static_assert(UpdateFunction<FindChar, char, CharMetric>, "FindChar does not fulfill UpdateFunction concept");
+static_assert(UpdateFunction<FindChar, char, CharMetric>,
+              "FindChar does not fulfill UpdateFunction concept");
 
 int main() {
   // Seed random number generator
@@ -69,8 +75,9 @@ int main() {
 
   // Type definition for our map
   // This is a sharded hash map whose keys are chars and whose values are CharMetric.
-  // Each thread has an std::unordered_map as a local hash map. You can use any compatible hash map implementation
-  // instead. I recommend ankerl::unordered_dense::map from https://github.com/martinus/unordered_dense
+  // Each thread has an std::unordered_map as a local hash map. You can use any compatible hash map
+  // implementation instead. I recommend ankerl::unordered_dense::map from
+  // https://github.com/martinus/unordered_dense
   //
   // We use the FindChar update function to decide what happens when inserting or updating values.
   // Since the keys are chars and CountChar::InputType = size_t,
@@ -87,8 +94,8 @@ int main() {
   // Parallel area
 #pragma omp parallel num_threads(NUM_THREADS)
   {
-    // Create a shard for each thread. We access the map using this shard. The argument is the thread id.
-    // E.g. for 4 threads, the thread ids *must* be 0,1,2,3 for each thread respectively.
+    // Create a shard for each thread. We access the map using this shard. The argument is the
+    // thread id. E.g. for 4 threads, the thread ids *must* be 0,1,2,3 for each thread respectively.
     const size_t thread_id = omp_get_thread_num();
     const size_t start     = thread_id * (s.size() / NUM_THREADS);
     const size_t end       = (thread_id + 1) * (s.size() / NUM_THREADS);
@@ -114,9 +121,9 @@ int main() {
     while (threads_done.load() < NUM_THREADS) {
       shard.handle_queue_sync(false);
     }
-    // This thread is done participating in the map. If any threads are still stuck in the above loop,
-    // they won't be waiting for this thread anymore.
-    // I.e. this decrements the number of threads required to unblock the barrier.
+    // This thread is done participating in the map. If any threads are still stuck in the above
+    // loop, they won't be waiting for this thread anymore. I.e. this decrements the number of
+    // threads required to unblock the barrier.
     barrier.arrive_and_drop();
   }
 
@@ -127,15 +134,19 @@ int main() {
 
   // Iterate over the map. and execute a function
   map.for_each([](const char &k, const CharMetric &v) {
-    std::cout << k << " appears " << v.count << " times and first at position " << v.first_occ << std::endl;
+    std::cout << k << " appears " << v.count << " times and first at position " << v.first_occ
+              << std::endl;
   });
 
   // map.find() works as expected
   auto result = map.find('a');
   if (result != map.end()) {
     const auto &[key, value] = *result;
-    std::cout << "result for char '" << key << "' found! " << value.count << " " << value.first_occ << std::endl;
+    std::cout << "result for char '" << key << "' found! " << value.count << " " << value.first_occ
+              << std::endl;
   }
+
+  a();
 
   return 0;
 }

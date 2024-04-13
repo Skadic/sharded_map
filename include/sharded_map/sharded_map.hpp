@@ -1,9 +1,13 @@
 #pragma once
 
+#include <algorithm>
 #include <atomic>
 #include <barrier>
+#include <concepts>
 #include <cstddef>
+#include <omp.h>
 #include <span>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -22,6 +26,13 @@ constexpr uint64_t mix_select(uint64_t key) {
   key *= 0x81dadef4bc2dd44d;
   key ^= (key >> 33);
   return key;
+}
+
+/// @brief Returns the ceiling of x / y for x > 0;
+///
+/// https://stackoverflow.com/questions/2745074/fast-ceiling-of-an-integer-division-in-c-c
+constexpr size_t ceil_div(std::integral auto x, std::integral auto y) {
+  return 1 + (static_cast<size_t>(x) - 1) / static_cast<size_t>(y);
 }
 
 } // namespace util
@@ -47,6 +58,23 @@ concept UpdateFunction = requires(const K &k, V &v_lv, typename Fn::InputValue i
   // value to be inserted into the map
   { Fn::init(k, std::move(in_v_rv)) } -> std::convertible_to<V>;
 };
+
+template<typename Fn>
+concept StateCreatorFunction =
+    std::invocable<size_t> && !std::is_void_v<std::result_of_t<Fn(size_t)>>;
+
+template<typename Fn, typename K, typename V, typename State>
+concept StatefulGeneratorFunction =
+    !std::is_void_v<State> && std::invocable<Fn, size_t, std::add_lvalue_reference_t<State>> &&
+    std::same_as<std::result_of_t<Fn(size_t, std::add_lvalue_reference_t<State>)>, std::pair<K, V>>;
+
+template<typename Fn, typename K, typename V>
+concept StatelessGeneratorFunction =
+    std::invocable<Fn, size_t> && std::same_as<std::result_of_t<Fn(size_t)>, std::pair<K, V>>;
+
+template<typename Fn, typename K, typename V, typename State>
+concept PairGeneratorFunction =
+    StatefulGeneratorFunction<Fn, K, V, State> || StatelessGeneratorFunction<Fn, K, V>;
 
 namespace update_functions {
 ///
@@ -82,31 +110,32 @@ struct Keep {
 
 } // namespace update_functions
 
-/// @brief A hash map that must be used by multiple threads, each thread having only having write access to a certain
-/// segment of the hash input space.
+/// @brief A hash map that must be used by multiple threads, each thread having only having write
+/// access to a certain segment of the hash input space.
 ///
 /// Each processor has one queue and one local hash map.
 ///
-/// To use this map with `p` threads, create a shard for each thread using `get_shard` with thread id's ranging from 0
-/// to (inclusively) p-1. Each possible hash has exactly one processor that is responsible for storing that hash.
-/// Inserting an element inserts it into its responsible processor's queue.
-/// `handle_queue_sync` and `handle_queue_async` empty the processor's queue
-/// and insert/update all values in the local hash map.
-/// `handle_queue_sync` is automatically called by a processor trying to insert a value, if the responsible
-/// thread's queue is full. So, if all threads are continuously inserting elements, it should suffice for all processors
-/// to keep calling `insert` without manually handling the queues.
+/// To use this map with `p` threads, create a shard for each thread using `get_shard` with thread
+/// id's ranging from 0 to (inclusively) p-1. Each possible hash has exactly one processor that is
+/// responsible for storing that hash. Inserting an element inserts it into its responsible
+/// processor's queue. `handle_queue_sync` and `handle_queue_async` empty the processor's queue and
+/// insert/update all values in the local hash map. `handle_queue_sync` is automatically called by a
+/// processor trying to insert a value, if the responsible thread's queue is full. So, if all
+/// threads are continuously inserting elements, it should suffice for all processors to keep
+/// calling `insert` without manually handling the queues.
 ///
-/// If not all processors are inserting elements at some point, then it becomes necessary for processors to handle the
-/// queues manually using any of the two `handle_queue` methods.
+/// If not all processors are inserting elements at some point, then it becomes necessary for
+/// processors to handle the queues manually using any of the two `handle_queue` methods.
 ///
 /// @tparam K The type of the keys in the hash map.
 /// @tparam V The type of the values in the hash map.
-/// @tparam SeqHashMapType The type of the hash map used internally. This should be compatible with std::unordered_map.
+/// @tparam SeqHashMapType The type of the hash map used internally. This should be compatible with
+/// std::unordered_map.
 /// @tparam UpdateFn The update function deciding how to insert or update values in the map.
 template<std::copy_constructible K,
          std::move_constructible V,
          template<typename, typename, typename...> typename SeqHashMapType = std::unordered_map,
-         UpdateFunction<K, V> UpdateFn                                     = update_functions::Overwrite<K, V>>
+         UpdateFunction<K, V> UpdateFn = update_functions::Overwrite<K, V>>
   requires std::movable<typename UpdateFn::InputValue>
 class ShardedMap {
   /// The sequential backing hash map type
@@ -158,7 +187,8 @@ class ShardedMap {
 public:
   /// @brief Creates a new sharded map.
   ///
-  /// @param thread_count The exact number of threads working on this map. Thread ids must be 0, 1, ..., thread_count-1.
+  /// @param thread_count The exact number of threads working on this map. Thread ids must be 0, 1,
+  /// ..., thread_count-1.
   /// @param queue_capacity The maximum amount of elements allowed in each queue.
   ///
   ShardedMap(size_t thread_count, size_t queue_capacity) :
@@ -168,7 +198,8 @@ public:
       task_count_(),
       threads_handling_queue_(0),
       queue_capacity_(queue_capacity),
-      barrier_(std::make_unique<std::barrier<decltype(FN)>>(static_cast<ptrdiff_t>(thread_count), FN)) {
+      barrier_(
+          std::make_unique<std::barrier<decltype(FN)>>(static_cast<ptrdiff_t>(thread_count), FN)) {
     map_.reserve(thread_count);
     task_queue_.reserve(thread_count);
     task_count_ = std::span<std::atomic_size_t>(new std::atomic_size_t[thread_count], thread_count);
@@ -186,7 +217,9 @@ public:
     }
   }
 
-  void reset_barrier() { barrier_.reset(new std::barrier<decltype(FN)>{static_cast<ptrdiff_t>(thread_count_), FN}); }
+  void reset_barrier() {
+    barrier_.reset(new std::barrier<decltype(FN)>{static_cast<ptrdiff_t>(thread_count_), FN});
+  }
 
   class Shard {
     // @brief The sharded map this shard belongs to.
@@ -232,16 +265,18 @@ public:
     }
 
     ///
-    /// @brief Handles this thread's queue synchronously with other threads, inserting or updating all values in its
-    /// queue.
+    /// @brief Handles this thread's queue synchronously with other threads, inserting or updating
+    /// all values in its queue.
     ///
-    /// This thread will wait until all other threads also call this method before starting to handle the queues.
-    /// 
-    /// @param cause_wait If true, this will force other threads to handle their queues when they call insert.
+    /// This thread will wait until all other threads also call this method before starting to
+    /// handle the queues.
+    ///
+    /// @param cause_wait If true, this will force other threads to handle their queues when they
+    /// call insert.
     ///
     void handle_queue_sync(bool cause_wait = true) {
-      // If we want to cause other threads to wait, we increment the number of threads handling the queue
-      // This will cause other threads to wait when they call insert if >0
+      // If we want to cause other threads to wait, we increment the number of threads handling the
+      // queue This will cause other threads to wait when they call insert if >0
       if (cause_wait) {
         sharded_map_.threads_handling_queue_.fetch_add(1, mem::acq_rel);
       }
@@ -258,7 +293,8 @@ public:
     ///
     /// @brief Handles this thread's queue, inserting or updating all values in its queue.
     ///
-    /// Warning: This should not be called while other threads are inserting into this thread's queue!
+    /// Warning: This should not be called while other threads are inserting into this thread's
+    /// queue!
     ///
     void handle_queue_async() {
       const size_t num_tasks_uncapped = task_count_.exchange(0, mem::acq_rel);
@@ -276,9 +312,9 @@ public:
 
     /// @brief Inserts or updates a new value in the map.
     ///
-    /// If the value is inserted into the current thread's map, it is inserted immediately. If not, then it is added to
-    /// that thread's queue. It will only be inserted into the map, once the thread comes around to handle its queue
-    /// using the handle_queue method.
+    /// If the value is inserted into the current thread's map, it is inserted immediately. If not,
+    /// then it is added to that thread's queue. It will only be inserted into the map, once the
+    /// thread comes around to handle its queue using the handle_queue method.
     ///
     /// @param pair The key-value pair to insert or update.
     void insert(QueueStoredValue &&pair) {
@@ -310,9 +346,9 @@ public:
 
     /// @brief Inserts or updates a new value in the map.
     ///
-    /// If the value is inserted into the current thread's map, it is inserted immediately. If not, then it is added to
-    /// that thread's queue. It will only be inserted into the map, once the thread comes around to handle its queue
-    /// using the handle_queue method.
+    /// If the value is inserted into the current thread's map, it is inserted immediately. If not,
+    /// then it is added to that thread's queue. It will only be inserted into the map, once the
+    /// thread comes around to handle its queue using the handle_queue method.
     ///
     /// @param key The key of the value to insert.
     /// @param value The value to associate with the key.
@@ -340,20 +376,115 @@ public:
     return size;
   }
 
+  ///
+  /// @brief Batch inserts several elements in parallel with a thread-local state.
+  ///
+  /// The inserted elements are generated by a generator function
+  /// which takes as arguments the current iteration index and a reference to the thread-local
+  /// state.
+  ///
+  /// This function allows creating mutable thread-local state instantes of any type
+  /// which are passed to each invocation of the generator function.
+  ///
+  /// @param start The start index if the iteration.
+  /// @param end The (exclusive) end index of the iteration
+  /// @param gen_state A function that takes a size_t as input which is the thread id, and returns
+  ///   the initial thread-local state of this thread's invocations of the generator function.
+  ///   This state may be of any desired type.
+  /// @param generate_next A function that generates key-value pairs to insert into the map. It
+  ///   takes the current index of the iteration and a reference to the current thread-local state
+  ///   and returns an std::pair<K,InputValue>, which is inserted into the map.
+  ///
+  template<std::invocable<size_t> CreateStateFn,
+           std::copyable          State = std::result_of_t<CreateStateFn(size_t)>,
+           StatefulGeneratorFunction<K, InputValue, State> GeneratorFn>
+  std::vector<State>
+  batch_insert(size_t start, size_t end, CreateStateFn gen_state, GeneratorFn generate_next) {
+    // Create thread-local state
+    std::vector<State> state;
+    state.reserve(thread_count_);
+    for (size_t i = 0; i < thread_count_; i++) {
+      state.push_back(gen_state(i));
+    }
+    if (start >= end) {
+      return state;
+    }
+
+    const size_t range_size   = end - start;
+    const size_t segment_size = util::ceil_div(range_size, thread_count_);
+
+    std::atomic_size_t threads_done;
+
+#pragma omp parallel num_threads(thread_count_)
+    {
+      const size_t thread_id    = omp_get_thread_num();
+      const size_t thread_start = start + thread_id * segment_size;
+      const size_t thread_end   = std::min(start + (thread_id + 1) * segment_size, end);
+      Shard        shard        = get_shard(thread_id);
+      State       &local_state  = state[thread_id];
+
+      for (size_t i = thread_start; i < thread_end; i++) {
+        std::pair<K, InputValue> res = generate_next(i, local_state);
+        shard.insert(res.first, res.second);
+      }
+
+      threads_done++;
+
+      while (threads_done.load() < thread_count_) {
+        shard.handle_queue_sync(false);
+      }
+      shard.handle_queue_async();
+      barrier_->arrive_and_drop();
+    }
+
+    reset_barrier();
+    return state;
+  }
+
+  ///
+  /// @brief Batch inserts several elements in parallel with a thread-local state.
+  ///
+  /// The inserted elements are generated by a generator function
+  /// which takes as arguments the current iteration index and a reference to the thread-local
+  /// state.
+  ///
+  /// This function allows creating mutable thread-local state instantes of any type
+  /// which are passed to each invocation of the generator function.
+  ///
+  /// @param start The start index if the iteration.
+  /// @param end The (exclusive) end index of the iteration
+  /// @param gen_state A function that takes a size_t as input which is the thread id, and returns
+  ///   the initial thread-local state of this thread's invocations of the generator function. This
+  ///   state may be of any desired type.
+  /// @param generate_next A function that generates key-value pairs to insert into the map. It
+  ///   takes the current index of the iteration and a reference to the current thread-local state
+  ///   and returns an std::pair<K,InputValue>, which is inserted into the map.
+  ///
+  template<StatelessGeneratorFunction<K, InputValue> GeneratorFn>
+  void batch_insert(size_t start, size_t end, GeneratorFn generate_next) {
+    batch_insert(
+        start,
+        end,
+        [](size_t) -> int { return 0; },
+        [&](size_t i, int &) { return generate_next(i); });
+  }
+
   /// @brief The whereabouts of a value in the sharded hash map.
   ///
-  /// The three variants denote, whether an element does not exist, is contained in a local hash map or is still inside
-  /// a queue.
+  /// The three variants denote, whether an element does not exist, is contained in a local hash map
+  /// or is still inside a queue.
   enum class Whereabouts { NOWHERE, IN_MAP, IN_QUEUE };
 
   ///
-  /// @brief Searches a hash map and queue to determine whether the given key exists in the sharded hash table.
+  /// @brief Searches a hash map and queue to determine whether the given key exists in the sharded
+  /// hash table.
   ///
-  /// Note, that this is not efficient and only for debug purposes. The time complexity is linear in the queue size.
+  /// Note, that this is not efficient and only for debug purposes. The time complexity is linear in
+  /// the queue size.
   ///
   /// @param k The key to search for.
-  /// @return NOWHERE, if the element does not exist. IN_MAP, if the element exists in a hash map. IN_QUEUE, if the
-  /// element exists in a queue.
+  /// @return NOWHERE, if the element does not exist. IN_MAP, if the element exists in a hash map.
+  /// IN_QUEUE, if the element exists in a queue.
   ///
   [[maybe_unused]] Whereabouts where(const K &k) {
     const size_t                  hash             = Hasher{}(k);
@@ -395,6 +526,16 @@ public:
       return end();
     }
     return it;
+  }
+
+  /// @brief Returns the number of elements in each queue.
+  [[nodiscard]] std::vector<size_t> queue_loads() const {
+    std::vector<size_t> loads;
+    loads.reserve(thread_count_);
+    for (size_t i = 0; i < thread_count_; ++i) {
+      loads.push_back(task_count_[i].load());
+    }
+    return loads;
   }
 
   /// @brief Returns the number of elements in each map.
