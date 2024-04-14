@@ -4,7 +4,9 @@ sharded_map
 `sharded_map` provides a sharded hash map implementation for parallel processing. This implementation centers around the :cpp:class:`ShardedMap <sharded_map::ShardedMap>` class.
 
 
-An example might look like this::
+An example might look like this:
+
+.. code-block:: cpp
 
   #include <sharded_map/sharded_map.hpp>
   #include <iostream>
