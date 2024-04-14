@@ -28,7 +28,7 @@ int main() {
   // we insert pairs of std::pair<char, size_t> when calling insert.
   using Map = ShardedMap<char, CharMetric, std::unordered_map, FindChar>;
 
-  // Create a map for 4 threads with a queue capacity if 128 elements.
+  // Create a map for 4 threads with a queue capacity of 128 elements.
   Map map(NUM_THREADS, 128);
 
   // We keep track of how many threads are done inserting values.

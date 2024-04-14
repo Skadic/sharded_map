@@ -21,7 +21,7 @@ int main() {
   // Type definition for our map
   using Map = ShardedMap<char, CharMetric, std::unordered_map, FindChar>;
 
-  // Create a map for 4 threads with a queue capacity if 128 elements.
+  // Create a map for 4 threads with a queue capacity of 128 elements.
   Map map(NUM_THREADS, 128);
 
   // This will be our thread-local state. It just counts how many chars a thread has handled.

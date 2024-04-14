@@ -6,7 +6,6 @@
 #include <concepts>
 #include <cstddef>
 #include <iterator>
-#include <limits>
 #include <omp.h>
 #include <ranges>
 #include <span>
@@ -38,6 +37,17 @@ constexpr size_t ceil_div(std::integral auto x, std::integral auto y) {
   return 1 + (static_cast<size_t>(x) - 1) / static_cast<size_t>(y);
 }
 
+///
+/// @brief For two integer types, gets the smallest integer type that fits both types.
+///
+/// If any of the two types are signed, then the output type will also be signed.
+/// Otherwise it is unsigned.
+///
+/// The output type is available through the public `type` type definition.
+///
+/// @tparam L An integer type
+/// @tparam R Another integer type
+///
 template<std::integral L, std::integral R>
 struct unify_ints {
 private:
@@ -49,6 +59,7 @@ public:
                                   std::make_unsigned_t<temp_type>>;
 };
 
+/// @brief Shorthand for `unify_ints<L, R>::type`
 template<std::integral L, std::integral R>
 using unify_ints_t = unify_ints<L, R>::type;
 
@@ -76,10 +87,20 @@ concept UpdateFunction = requires(const K &k, V &v_lv, typename Fn::InputValue i
   { Fn::init(k, std::move(in_v_rv)) } -> std::convertible_to<V>;
 };
 
+/// @brief Represents a function which given a `size_t` thread id, generates some non-void state
+/// value
+/// @tparam Fn The type of the function.
 template<typename Fn>
 concept StateCreatorFunction =
     std::invocable<Fn, size_t> && !std::is_void_v<std::result_of_t<Fn(size_t)>>;
 
+/// @brief Represents a function which given a reference to an `IterVal`, and a reference to a
+/// `State`, returns a `std::pair<K,V>`.
+/// @tparam Fn The type of the function.
+/// @tparam K The key of the pair.
+/// @tparam V The value of the pair.
+/// @tparam IterVal The value returned by an iterator from which the function generates the pair.
+/// @tparam State The thread-local state.
 template<typename Fn, typename K, typename V, typename IterVal, typename State>
 concept StatefulGeneratorFunction =
     !std::is_void_v<State> &&
@@ -88,25 +109,34 @@ concept StatefulGeneratorFunction =
                                      std::add_lvalue_reference_t<State>)>,
                  std::pair<K, V>>;
 
+/// @brief Represents a function which given a reference to an `IterVal` returns a `std::pair<K,V>`.
+/// @tparam Fn The type of the function.
+/// @tparam K The key of the pair.
+/// @tparam V The value of the pair.
+/// @tparam IterVal The value returned by an iterator from which the function generates the pair.
 template<typename Fn, typename K, typename V, typename IterVal>
 concept StatelessGeneratorFunction =
     std::invocable<Fn, std::add_lvalue_reference_t<IterVal>> &&
     std::same_as<std::result_of_t<Fn(std::add_lvalue_reference_t<IterVal>)>, std::pair<K, V>>;
 
+/// @brief A namespace with simple update functions
 namespace update_functions {
-///
+
 /// @brief An update function for sharded maps which on update just overwrites
-/// the value.
+/// the previousvalue.
 ///
 /// @tparam K The key type saved in the hash map.
 /// @tparam V The value type saved in the hash map.
 ///
 template<std::copy_constructible K, std::move_constructible V>
 struct Overwrite {
+  // The values we insert are the same as the ones saved in the map
   using InputValue = V;
 
+  /// @brief Upon inserting an existing value, overwrite it.
   inline static void update(const K &, V &value, V &&input_value) { value = input_value; }
 
+  /// @brief Upon inserting a new value, just insert that value
   inline static V init(const K &, V &&input_value) { return input_value; }
 };
 
@@ -119,9 +149,13 @@ struct Overwrite {
 ///
 template<std::copy_constructible K, std::move_constructible V>
 struct Keep {
+  // The values we insert are the same as the ones saved in the map
   using InputValue = V;
+
+  /// @brief Upon inserting an existing value, we do nothing.
   inline static void update(const K &, V &, V &&) {}
 
+  /// @brief Upon inserting a new value, just insert that value
   inline static V init(const K &, V &&input_value) { return input_value; }
 };
 
@@ -234,6 +268,8 @@ public:
     }
   }
 
+  /// @brief When the thread barrier was modified (e.g. by calling `arrive_and_drop`), reset it to
+  /// its original state, so insertions function properly again.
   void reset_barrier() {
     barrier_.reset(new std::barrier<decltype(FN)>{static_cast<ptrdiff_t>(thread_count_), FN});
   }
@@ -705,6 +741,8 @@ public:
   }
 
   /// @brief Return a reference to the thread barrier used by this map.
+  ///
+  /// Note that if you call `reset_barrier`, the reference returned by this function is invalidated!
   std::barrier<decltype(FN)> &barrier() { return *barrier_; }
 
 }; // namespace pasta
