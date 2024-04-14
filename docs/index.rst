@@ -37,7 +37,7 @@ An example might look like this:
     // Type definition for our map
     using Map = ShardedMap<char, std::vector<size_t>, std::unordered_map, FindOccs>;
 
-    // Create a map for 4 threads with a queue capacity if 128 elements.
+    // Create a map for 4 threads with a queue capacity of 128 elements.
     Map map(4, 128);
 
     // Iterate from 0 (inclusive) to s.size() (exclusive)
