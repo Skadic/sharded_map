@@ -1,0 +1,16 @@
+.. _dir_sharded_map:
+
+
+Directory sharded_map
+=====================
+
+
+*Directory path:* ``sharded_map``
+
+
+Files
+-----
+
+- :ref:`file_sharded_map_sharded_map.hpp`
+
+

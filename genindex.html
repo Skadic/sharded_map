@@ -1,0 +1,332 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="#" /><link rel="search" title="Search" href="search.html" />
+
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 --><title>Index - sharded_map documentation</title>
+<link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-treeview/bootstrap-treeview.min.css?v=8176a87d" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=36a5483c" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">sharded_map  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">sharded_map  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">sharded_map</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/library_root.html">sharded_map API</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of sharded_map API</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/namespace_sharded_map.html">Namespace sharded_map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/namespace_sharded_map__update_functions.html">Namespace sharded_map::update_functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/namespace_sharded_map__util.html">Namespace sharded_map::util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/structsharded__map_1_1update__functions_1_1Keep.html">Template Struct Keep</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/structsharded__map_1_1update__functions_1_1Overwrite.html">Template Struct Overwrite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/structsharded__map_1_1util_1_1unify__ints.html">Template Struct unify_ints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/classsharded__map_1_1ShardedMap.html">Template Class ShardedMap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/classsharded__map_1_1ShardedMap_1_1Shard.html">Class ShardedMap::Shard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/function_namespacesharded__map_1_1util_1ab9030a4508f62dcc1c4deffab5bf6aab.html">Function sharded_map::util::ceil_div</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/function_namespacesharded__map_1_1util_1a37b92017cf92f5f92ed026e2243f5ab2.html">Function sharded_map::util::mix_select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/typedef_namespacesharded__map_1_1util_1a9784ef71364e349a5fd1fa4fffbbdb2d.html">Typedef sharded_map::util::unify_ints_t</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          
+<section class="genindex-section">
+  <h1 id="index">Index</h1>
+  <div class="genindex-jumpbox"><a href="#S"><strong>S</strong></a></div>
+</section>
+<section id="S" class="genindex-section">
+  <h2>S</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4I_NSt18copy_constructibleE_NSt18move_constructibleEI00DpE0_14UpdateFunctionI1K1VEEN11sharded_map10ShardedMapE">sharded_map::ShardedMap (C++ class)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap7barrierEv">sharded_map::ShardedMap::barrier (C++ function)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4I_20StateCreatorFunction_NSt8copyableE_NSt22random_access_iteratorE_25StatefulGeneratorFunctionI1K10InputValueNSt16iter_reference_tI4IterEE5StateEEN11sharded_map10ShardedMap12batch_insertENSt6vectorI5StateEE4Iter4Iter13CreateStateFn11GeneratorFn">sharded_map::ShardedMap::batch_insert (C++ function)</a>, <a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4I_20StateCreatorFunction_NSt8copyableE_NSt8integralE_NSt8integralE_25StatefulGeneratorFunctionI1K10InputValueN4util12unify_ints_tI12StartIntType10EndIntTypeEE5StateEEN11sharded_map10ShardedMap12batch_insertENSt6vectorI5StateEE12StartIntType10EndIntType13CreateStateFn11GeneratorFn">[1]</a>, <a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4I_26StatelessGeneratorFunctionI1K10InputValue6size_tEEN11sharded_map10ShardedMap12batch_insertEvNSt8integralENSt8integralE11GeneratorFn">[2]</a>, <a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4I_NSt22random_access_iteratorE_26StatelessGeneratorFunctionI1K10InputValueNSt16iter_reference_tI4IterEEEEN11sharded_map10ShardedMap12batch_insertEv4Iter4Iter11GeneratorFn">[3]</a>, <a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4I_NSt6ranges19random_access_rangeE_20StateCreatorFunction_NSt8copyableE_25StatefulGeneratorFunctionI1K10InputValueNSt6ranges17range_reference_tI5RangeEE5StateEEN11sharded_map10ShardedMap12batch_insertENSt6vectorI5StateEER5Range13CreateStateFn11GeneratorFn">[4]</a>, <a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4I_NSt6ranges19random_access_rangeE_26StatelessGeneratorFunctionI1K10InputValueNSt6ranges17range_reference_tI5RangeEEEEN11sharded_map10ShardedMap12batch_insertEvR5Range11GeneratorFn">[5]</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap3endEv">sharded_map::ShardedMap::end (C++ function)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap4findERK1K">sharded_map::ShardedMap::find (C++ function)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4NK11sharded_map10ShardedMap8for_eachENSt9invocableIRK1KRK1VEE">sharded_map::ShardedMap::for_each (C++ function)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap9get_shardEK6size_t">sharded_map::ShardedMap::get_shard (C++ function)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4NK11sharded_map10ShardedMap9map_loadsEv">sharded_map::ShardedMap::map_loads (C++ function)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4NK11sharded_map10ShardedMap11queue_loadsEv">sharded_map::ShardedMap::queue_loads (C++ function)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap13reset_barrierEv">sharded_map::ShardedMap::reset_barrier (C++ function)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap5ShardE">sharded_map::ShardedMap::Shard (C++ class)</a>, <a href="api/classsharded__map_1_1ShardedMap_1_1Shard.html#_CPPv4N11sharded_map10ShardedMap5ShardE">[1]</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap5Shard18handle_queue_asyncEv">sharded_map::ShardedMap::Shard::handle_queue_async (C++ function)</a>, <a href="api/classsharded__map_1_1ShardedMap_1_1Shard.html#_CPPv4N11sharded_map10ShardedMap5Shard18handle_queue_asyncEv">[1]</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap5Shard17handle_queue_syncEb">sharded_map::ShardedMap::Shard::handle_queue_sync (C++ function)</a>, <a href="api/classsharded__map_1_1ShardedMap_1_1Shard.html#_CPPv4N11sharded_map10ShardedMap5Shard17handle_queue_syncEb">[1]</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap5Shard6insertERK1K10InputValue">sharded_map::ShardedMap::Shard::insert (C++ function)</a>, <a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap5Shard6insertERR16QueueStoredValue">[1]</a>, <a href="api/classsharded__map_1_1ShardedMap_1_1Shard.html#_CPPv4N11sharded_map10ShardedMap5Shard6insertERK1K10InputValue">[2]</a>, <a href="api/classsharded__map_1_1ShardedMap_1_1Shard.html#_CPPv4N11sharded_map10ShardedMap5Shard6insertERR16QueueStoredValue">[3]</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap5Shard23insert_or_update_directERK1KRR10InputValue">sharded_map::ShardedMap::Shard::insert_or_update_direct (C++ function)</a>, <a href="api/classsharded__map_1_1ShardedMap_1_1Shard.html#_CPPv4N11sharded_map10ShardedMap5Shard23insert_or_update_directERK1KRR10InputValue">[1]</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap5Shard5ShardER10ShardedMap6size_t">sharded_map::ShardedMap::Shard::Shard (C++ function)</a>, <a href="api/classsharded__map_1_1ShardedMap_1_1Shard.html#_CPPv4N11sharded_map10ShardedMap5Shard5ShardER10ShardedMap6size_t">[1]</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap10ShardedMapE6size_t6size_t">sharded_map::ShardedMap::ShardedMap (C++ function)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4NK11sharded_map10ShardedMap4sizeEv">sharded_map::ShardedMap::size (C++ function)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap5whereERK1K">sharded_map::ShardedMap::where (C++ function)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap11WhereaboutsE">sharded_map::ShardedMap::Whereabouts (C++ enum)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap11Whereabouts6IN_MAPE">sharded_map::ShardedMap::Whereabouts::IN_MAP (C++ enumerator)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap11Whereabouts8IN_QUEUEE">sharded_map::ShardedMap::Whereabouts::IN_QUEUE (C++ enumerator)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMap11Whereabouts7NOWHEREE">sharded_map::ShardedMap::Whereabouts::NOWHERE (C++ enumerator)</a>
+</li>
+        <li><a href="api/classsharded__map_1_1ShardedMap.html#_CPPv4N11sharded_map10ShardedMapD0Ev">sharded_map::ShardedMap::~ShardedMap (C++ function)</a>
+</li>
+        <li><a href="api/structsharded__map_1_1update__functions_1_1Keep.html#_CPPv4I_NSt18copy_constructibleE_NSt18move_constructibleEEN11sharded_map16update_functions4KeepE">sharded_map::update_functions::Keep (C++ struct)</a>
+</li>
+        <li><a href="api/structsharded__map_1_1update__functions_1_1Keep.html#_CPPv4N11sharded_map16update_functions4Keep4initERK1KRR1V">sharded_map::update_functions::Keep::init (C++ function)</a>
+</li>
+        <li><a href="api/structsharded__map_1_1update__functions_1_1Keep.html#_CPPv4N11sharded_map16update_functions4Keep10InputValueE">sharded_map::update_functions::Keep::InputValue (C++ type)</a>
+</li>
+        <li><a href="api/structsharded__map_1_1update__functions_1_1Keep.html#_CPPv4N11sharded_map16update_functions4Keep6updateERK1KR1VRR1V">sharded_map::update_functions::Keep::update (C++ function)</a>
+</li>
+        <li><a href="api/structsharded__map_1_1update__functions_1_1Overwrite.html#_CPPv4I_NSt18copy_constructibleE_NSt18move_constructibleEEN11sharded_map16update_functions9OverwriteE">sharded_map::update_functions::Overwrite (C++ struct)</a>
+</li>
+        <li><a href="api/structsharded__map_1_1update__functions_1_1Overwrite.html#_CPPv4N11sharded_map16update_functions9Overwrite4initERK1KRR1V">sharded_map::update_functions::Overwrite::init (C++ function)</a>
+</li>
+        <li><a href="api/structsharded__map_1_1update__functions_1_1Overwrite.html#_CPPv4N11sharded_map16update_functions9Overwrite10InputValueE">sharded_map::update_functions::Overwrite::InputValue (C++ type)</a>
+</li>
+        <li><a href="api/structsharded__map_1_1update__functions_1_1Overwrite.html#_CPPv4N11sharded_map16update_functions9Overwrite6updateERK1KR1VRR1V">sharded_map::update_functions::Overwrite::update (C++ function)</a>
+</li>
+        <li><a href="api/function_namespacesharded__map_1_1util_1ab9030a4508f62dcc1c4deffab5bf6aab.html#_CPPv4N11sharded_map4util8ceil_divENSt8integralENSt8integralE">sharded_map::util::ceil_div (C++ function)</a>
+</li>
+        <li><a href="api/function_namespacesharded__map_1_1util_1a37b92017cf92f5f92ed026e2243f5ab2.html#_CPPv4N11sharded_map4util10mix_selectE8uint64_t">sharded_map::util::mix_select (C++ function)</a>
+</li>
+        <li><a href="api/structsharded__map_1_1util_1_1unify__ints.html#_CPPv4I_NSt8integralE_NSt8integralEEN11sharded_map4util10unify_intsE">sharded_map::util::unify_ints (C++ struct)</a>
+</li>
+        <li><a href="api/structsharded__map_1_1util_1_1unify__ints.html#_CPPv4N11sharded_map4util10unify_ints4typeE">sharded_map::util::unify_ints::type (C++ type)</a>
+</li>
+        <li><a href="api/typedef_namespacesharded__map_1_1util_1a9784ef71364e349a5fd1fa4fffbbdb2d.html#_CPPv4I_NSt8integralE_NSt8integralEEN11sharded_map4util12unify_ints_tE">sharded_map::util::unify_ints_t (C++ type)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, Skadic
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="_static/bootstrap-treeview/bootstrap-treeview.min.js?v=6a1e96b4"></script>
+    </body>
+</html>

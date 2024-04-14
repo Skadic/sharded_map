@@ -1,0 +1,17 @@
+.. _exhale_struct_structsharded__map_1_1util_1_1unify__ints:
+
+Template Struct unify_ints
+==========================
+
+- Defined in :ref:`file_sharded_map_sharded_map.hpp`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: sharded_map::util::unify_ints
+   :project: sharded_map
+   :members:
+   :protected-members:
+   :undoc-members:

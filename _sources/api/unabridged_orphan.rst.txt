@@ -1,0 +1,23 @@
+:orphan:
+
+
+Full API
+========
+
+Directories
+***********
+
+
+.. toctree::
+   :maxdepth: 5
+
+   dir_sharded_map.rst
+
+Files
+*****
+
+
+.. toctree::
+   :maxdepth: 5
+
+   file_sharded_map_sharded_map.hpp.rst

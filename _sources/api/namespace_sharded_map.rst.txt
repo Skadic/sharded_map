@@ -1,0 +1,31 @@
+
+.. _namespace_sharded_map:
+
+Namespace sharded_map
+=====================
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_sharded_map__update_functions`
+
+- :ref:`namespace_sharded_map__util`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classsharded__map_1_1ShardedMap`
+
+- :ref:`exhale_class_classsharded__map_1_1ShardedMap_1_1Shard`

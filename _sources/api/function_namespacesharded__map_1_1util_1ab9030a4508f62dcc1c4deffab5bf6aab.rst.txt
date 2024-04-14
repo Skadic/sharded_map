@@ -1,0 +1,14 @@
+.. _exhale_function_namespacesharded__map_1_1util_1ab9030a4508f62dcc1c4deffab5bf6aab:
+
+Function sharded_map::util::ceil_div
+====================================
+
+- Defined in :ref:`file_sharded_map_sharded_map.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: sharded_map::util::ceil_div(std::integral auto, std::integral auto)
+   :project: sharded_map

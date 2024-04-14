@@ -1,0 +1,36 @@
+
+.. _namespace_sharded_map__util:
+
+Namespace sharded_map::util
+===========================
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structsharded__map_1_1util_1_1unify__ints`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespacesharded__map_1_1util_1ab9030a4508f62dcc1c4deffab5bf6aab`
+
+- :ref:`exhale_function_namespacesharded__map_1_1util_1a37b92017cf92f5f92ed026e2243f5ab2`
+
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef_namespacesharded__map_1_1util_1a9784ef71364e349a5fd1fa4fffbbdb2d`

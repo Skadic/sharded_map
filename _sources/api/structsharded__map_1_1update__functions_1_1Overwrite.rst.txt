@@ -1,0 +1,17 @@
+.. _exhale_struct_structsharded__map_1_1update__functions_1_1Overwrite:
+
+Template Struct Overwrite
+=========================
+
+- Defined in :ref:`file_sharded_map_sharded_map.hpp`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: sharded_map::update_functions::Overwrite
+   :project: sharded_map
+   :members:
+   :protected-members:
+   :undoc-members:

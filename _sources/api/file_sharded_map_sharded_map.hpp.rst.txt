@@ -1,0 +1,104 @@
+
+.. _file_sharded_map_sharded_map.hpp:
+
+File sharded_map.hpp
+====================
+
+|exhale_lsh| :ref:`Parent directory <dir_sharded_map>` (``sharded_map``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``sharded_map/sharded_map.hpp``)
+--------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_sharded_map_sharded_map.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``algorithm``
+
+- ``atomic``
+
+- ``barrier``
+
+- ``concepts``
+
+- ``cstddef``
+
+- ``iterator``
+
+- ``limits``
+
+- ``omp.h``
+
+- ``ranges``
+
+- ``span``
+
+- ``type_traits``
+
+- ``unordered_map``
+
+- ``vector``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_sharded_map`
+
+- :ref:`namespace_sharded_map__update_functions`
+
+- :ref:`namespace_sharded_map__util`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structsharded__map_1_1update__functions_1_1Keep`
+
+- :ref:`exhale_struct_structsharded__map_1_1update__functions_1_1Overwrite`
+
+- :ref:`exhale_struct_structsharded__map_1_1util_1_1unify__ints`
+
+- :ref:`exhale_class_classsharded__map_1_1ShardedMap`
+
+- :ref:`exhale_class_classsharded__map_1_1ShardedMap_1_1Shard`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespacesharded__map_1_1util_1ab9030a4508f62dcc1c4deffab5bf6aab`
+
+- :ref:`exhale_function_namespacesharded__map_1_1util_1a37b92017cf92f5f92ed026e2243f5ab2`
+
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef_namespacesharded__map_1_1util_1a9784ef71364e349a5fd1fa4fffbbdb2d`
+

@@ -1,0 +1,23 @@
+.. _exhale_class_classsharded__map_1_1ShardedMap_1_1Shard:
+
+Class ShardedMap::Shard
+=======================
+
+- Defined in :ref:`file_sharded_map_sharded_map.hpp`
+
+
+Nested Relationships
+--------------------
+
+This class is a nested type of :ref:`exhale_class_classsharded__map_1_1ShardedMap`.
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: sharded_map::ShardedMap::Shard
+   :project: sharded_map
+   :members:
+   :protected-members:
+   :undoc-members:

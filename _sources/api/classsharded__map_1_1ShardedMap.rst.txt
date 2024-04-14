@@ -1,0 +1,27 @@
+.. _exhale_class_classsharded__map_1_1ShardedMap:
+
+Template Class ShardedMap
+=========================
+
+- Defined in :ref:`file_sharded_map_sharded_map.hpp`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+- :ref:`exhale_class_classsharded__map_1_1ShardedMap_1_1Shard`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: sharded_map::ShardedMap
+   :project: sharded_map
+   :members:
+   :protected-members:
+   :undoc-members:

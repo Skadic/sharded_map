@@ -1,0 +1,22 @@
+
+.. _namespace_sharded_map__update_functions:
+
+Namespace sharded_map::update_functions
+=======================================
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structsharded__map_1_1update__functions_1_1Keep`
+
+- :ref:`exhale_struct_structsharded__map_1_1update__functions_1_1Overwrite`
