@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - master
+      - docs
+
+permissions:
+  contents: write
+  pages: write
 
 jobs:
   documentation:
