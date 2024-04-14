@@ -288,7 +288,8 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N11sharded_map10ShardedMap13reset_barrierEv">
 <span id="_CPPv3N11sharded_map10ShardedMap13reset_barrierEv"></span><span id="_CPPv2N11sharded_map10ShardedMap13reset_barrierEv"></span><span id="sharded_map::ShardedMap::reset_barrier"></span><span class="target" id="classsharded__map_1_1ShardedMap_1a420ce1241941bec66910ab33b212c073"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">reset_barrier</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11sharded_map10ShardedMap13reset_barrierEv" title="Permalink to this definition">#</a><br /></dt>
-<dd></dd></dl>
+<dd><p>When the thread barrier was modified (e.g. by calling <code class="docutils literal notranslate"><span class="pre">arrive_and_drop</span></code>), reset it to its original state, so insertions function properly again. </p>
+</dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N11sharded_map10ShardedMap9get_shardEK6size_t">
@@ -480,6 +481,7 @@
 <dt class="sig sig-object cpp" id="_CPPv4N11sharded_map10ShardedMap7barrierEv">
 <span id="_CPPv3N11sharded_map10ShardedMap7barrierEv"></span><span id="_CPPv2N11sharded_map10ShardedMap7barrierEv"></span><span id="sharded_map::ShardedMap::barrier"></span><span class="target" id="classsharded__map_1_1ShardedMap_1ac09c3b031e3fcbf3b2895294efbd4c9d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">barrier</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">decltype</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">FN</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">barrier</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11sharded_map10ShardedMap7barrierEv" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Return a reference to the thread barrier used by this map. </p>
+<p>Note that if you call <code class="docutils literal notranslate"><span class="pre">reset_barrier</span></code>, the reference returned by this function is invalidated! </p>
 </dd></dl>
 
 </div>

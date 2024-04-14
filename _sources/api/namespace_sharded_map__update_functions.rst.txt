@@ -5,6 +5,11 @@ Namespace sharded_map::update_functions
 =======================================
 
 
+A namespace with simple update functions. 
+
+
+
+
 .. contents:: Contents
    :local:
    :backlinks: none

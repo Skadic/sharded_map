@@ -42,8 +42,6 @@ Includes
 
 - ``iterator``
 
-- ``limits``
-
 - ``omp.h``
 
 - ``ranges``

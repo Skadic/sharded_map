@@ -215,7 +215,18 @@
 <dl class="cpp struct">
 <dt class="sig sig-object cpp" id="_CPPv4I_NSt8integralE_NSt8integralEEN11sharded_map4util10unify_intsE">
 <span id="_CPPv3I_NSt8integralE_NSt8integralEEN11sharded_map4util10unify_intsE"></span><span id="_CPPv2I_NSt8integralE_NSt8integralEEN11sharded_map4util10unify_intsE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">integral</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">L</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">integral</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="structsharded__map_1_1util_1_1unify__ints"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">unify_ints</span></span></span><a class="headerlink" href="#_CPPv4I_NSt8integralE_NSt8integralEEN11sharded_map4util10unify_intsE" title="Permalink to this definition">#</a><br /></dt>
-<dd><div class="breathe-sectiondef docutils container">
+<dd><p>For two integer types, gets the smallest integer type that fits both types. </p>
+<p>If any of the two types are signed, then the output type will also be signed. Otherwise it is unsigned.</p>
+<p>The output type is available through the public <code class="docutils literal notranslate"><span class="pre">type</span></code> type definition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Template Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>L</strong> – An integer type </p></li>
+<li><p><strong>R</strong> – Another integer type </p></li>
+</ul>
+</dd>
+</dl>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
 <dl class="cpp type">
 <dt class="sig sig-object cpp" id="_CPPv4N11sharded_map4util10unify_ints4typeE">
