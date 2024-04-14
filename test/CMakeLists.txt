@@ -11,6 +11,7 @@ FetchContent_MakeAvailable(Catch2)
 
 add_executable(sharded_map_test sharded_map_test.cpp)
 target_link_libraries(sharded_map_test PRIVATE Catch2::Catch2WithMain sharded_map)
+target_include_directories(sharded_map_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../examples)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)

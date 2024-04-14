@@ -1,20 +1,25 @@
-#include <algorithm>
-#include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_range_equals.hpp>
+
+#include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <numeric>
 #include <omp.h>
-#include <sharded_map/sharded_map.hpp>
+#include <ranges>
+#include <string>
 #include <unordered_map>
+
+#include <char_metric.hpp>
+#include <sharded_map/sharded_map.hpp>
 
 constexpr size_t NUM_ELEMS   = 100'000;
 constexpr size_t NUM_THREADS = 4;
 
 using namespace sharded_map;
 
-TEST_CASE("sharded map basic insertions", "[sharded]") {
+TEST_CASE("basic insertions", "[ints]") {
   using Map =
       ShardedMap<size_t, size_t, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
   Map map(NUM_THREADS, 128);
@@ -122,7 +127,7 @@ TEST_CASE("sharded map basic insertions", "[sharded]") {
   }
 }
 
-TEST_CASE("sharded map batch insertions", "[sharded] [batch]") {
+TEST_CASE("batch insertions", "[batch] [ints]") {
   using Map =
       ShardedMap<size_t, size_t, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
   Map map(NUM_THREADS, 128);
@@ -130,7 +135,7 @@ TEST_CASE("sharded map batch insertions", "[sharded] [batch]") {
   std::vector<size_t> values(NUM_ELEMS);
   std::iota(values.begin(), values.end(), 0);
 
-  map.batch_insert(0, NUM_ELEMS, [&values](size_t i) { return std::pair(i, values[i]); });
+  map.batch_insert((size_t) 0, NUM_ELEMS, [&values](size_t i) { return std::pair(i, values[i]); });
 
   SECTION("size equal to the number of values after insert") { REQUIRE(map.size() == NUM_ELEMS); }
   SECTION("queues are empty after insert") {
@@ -156,7 +161,7 @@ TEST_CASE("sharded map batch insertions", "[sharded] [batch]") {
     v *= 2;
   }
 
-  map.batch_insert(0, NUM_ELEMS, [&values](size_t i) { return std::pair(i, values[i]); });
+  map.batch_insert((size_t) 0, NUM_ELEMS, [&values](size_t i) { return std::pair(i, values[i]); });
 
   SECTION("size equal to the number of values after updates") { REQUIRE(map.size() == NUM_ELEMS); }
   SECTION("queues are empty after updates") {
@@ -179,7 +184,7 @@ TEST_CASE("sharded map batch insertions", "[sharded] [batch]") {
   }
 }
 
-TEST_CASE("sharded map batch state insertions", "[sharded] [batch] [state]") {
+TEST_CASE("batch state insertions", "[batch] [state] [ints]") {
   using Map =
       ShardedMap<size_t, size_t, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
   Map map(NUM_THREADS, 128);
@@ -192,15 +197,14 @@ TEST_CASE("sharded map batch state insertions", "[sharded] [batch] [state]") {
     std::generate(values.begin(), values.end(), [&i]() { return i++ % SEGMENT_SIZE; });
   }
 
-  map.batch_insert(
-      0,
-      NUM_ELEMS,
-      [](size_t) -> size_t { return 0; },
-      [](size_t i, size_t &state) {
-        const size_t old = state;
-        state++;
-        return std::pair(i, old);
-      });
+  map.batch_insert((size_t) 0,
+                   NUM_ELEMS,
+                   [](size_t) -> size_t { return 0; },
+                   [](size_t i, size_t &state) {
+                     const size_t old = state;
+                     state++;
+                     return std::pair(i, old);
+                   });
 
   SECTION("size equal to the number of values after insert") { REQUIRE(map.size() == NUM_ELEMS); }
   SECTION("queues are empty after insert") {
@@ -226,15 +230,14 @@ TEST_CASE("sharded map batch state insertions", "[sharded] [batch] [state]") {
     v *= 2;
   }
 
-  map.batch_insert(
-      0,
-      NUM_ELEMS,
-      [](size_t) -> size_t { return 0; },
-      [](size_t i, size_t &state) {
-        const size_t old = state;
-        state++;
-        return std::pair(i, 2 * old);
-      });
+  map.batch_insert((size_t) 0,
+                   NUM_ELEMS,
+                   [](size_t) -> size_t { return 0; },
+                   [](size_t i, size_t &state) {
+                     const size_t old = state;
+                     state++;
+                     return std::pair(i, 2 * old);
+                   });
 
   SECTION("size equal to the number of values after updates") { REQUIRE(map.size() == NUM_ELEMS); }
   SECTION("queues are empty after updates") {
@@ -254,5 +257,115 @@ TEST_CASE("sharded map batch state insertions", "[sharded] [batch] [state]") {
       }
     }
     REQUIRE_THAT(extracted_values, Catch::Matchers::UnorderedRangeEquals(values));
+  }
+}
+
+TEST_CASE("range batch insertions", "[batch] [range]") {
+
+  using Map = ShardedMap<char, CharMetric, std::unordered_map, FindChar>;
+  Map map(NUM_THREADS, 128);
+
+  static_assert(std::ranges::random_access_range<std::string>);
+
+  // Seed random number generator
+  std::srand(std::time(nullptr));
+
+  // Fill a string with 100000 random chars from 'a' to 'z'
+  std::string s;
+  s.resize(NUM_ELEMS);
+  std::generate(s.begin(), s.end(), []() { return std::rand() % 26 + 'a'; });
+
+  map.batch_insert(s, [](auto c) { return std::pair{c, (size_t) 0}; });
+
+  SECTION("queues are empty after insert") {
+    const auto   loads    = map.queue_loads();
+    const size_t max_load = *std::max_element(loads.begin(), loads.end());
+
+    REQUIRE(max_load == 0);
+  }
+
+  SECTION("all values are inserted") {
+    size_t num_chars = 0;
+    map.for_each([&num_chars](const char &, const CharMetric &cm) { num_chars += cm.count; });
+    REQUIRE(num_chars == s.size());
+  }
+
+  map.batch_insert(s, [](auto &c) { return std::pair{c, (size_t) 0}; });
+
+  SECTION("queues are empty after updates") {
+    const auto   loads    = map.queue_loads();
+    const size_t max_load = *std::max_element(loads.begin(), loads.end());
+    REQUIRE(max_load == 0);
+  }
+
+  SECTION("all values are updated") {
+    size_t num_chars = 0;
+    map.for_each([&num_chars](const char &, const CharMetric &cm) { num_chars += cm.count; });
+    REQUIRE(num_chars == 2 * s.size());
+  }
+}
+
+TEST_CASE("range batch state insertions", "[batch] [range] [state]") {
+
+  using Map = ShardedMap<char, CharMetric, std::unordered_map, FindChar>;
+  Map map(NUM_THREADS, 128);
+
+  static_assert(std::ranges::random_access_range<std::string>);
+
+  // Seed random number generator
+  std::srand(std::time(nullptr));
+
+  std::string s;
+  s.resize(NUM_ELEMS);
+  std::generate(s.begin(), s.end(), []() { return std::rand() % 26 + 'a'; });
+  std::vector<size_t> char_counters = map.batch_insert(
+      s,
+      [](size_t) { return (size_t) 0; },
+      [](char c, size_t &counter) {
+        counter++;
+        return std::pair(c, (size_t) 0);
+      });
+
+  SECTION("queues are empty after insert") {
+    const auto   loads    = map.queue_loads();
+    const size_t max_load = *std::max_element(loads.begin(), loads.end());
+
+    REQUIRE(max_load == 0);
+  }
+
+  SECTION("all values are inserted") {
+    size_t num_chars = 0;
+    map.for_each([&num_chars](const char &, const CharMetric &cm) { num_chars += cm.count; });
+    REQUIRE(num_chars == s.size());
+  }
+
+  SECTION("insertions tracked by all threads") {
+    const size_t num_chars = std::accumulate(char_counters.begin(), char_counters.end(), 0);
+    REQUIRE(num_chars == s.size());
+  }
+
+  char_counters = map.batch_insert(
+      s,
+      [](size_t) { return (size_t) 0; },
+      [](char c, size_t &counter) {
+        counter++;
+        return std::pair(c, (size_t) 0);
+      });
+
+  SECTION("queues are empty after updates") {
+    const auto   loads    = map.queue_loads();
+    const size_t max_load = *std::max_element(loads.begin(), loads.end());
+    REQUIRE(max_load == 0);
+  }
+
+  SECTION("all values are updated") {
+    size_t num_chars = 0;
+    map.for_each([&num_chars](const char &, const CharMetric &cm) { num_chars += cm.count; });
+    REQUIRE(num_chars == 2 * s.size());
+  }
+
+  SECTION("updates tracked by all threads") {
+    const size_t num_chars = std::accumulate(char_counters.begin(), char_counters.end(), 0);
+    REQUIRE(num_chars == s.size());
   }
 }
