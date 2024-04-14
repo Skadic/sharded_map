@@ -10,6 +10,8 @@ The central type is `ShardedMap<K, V, SeqHashMapType, UpdateFn>`.
 - `UpdateFn` is an *update function* denoting what happens, if a new value is inserted or an existing value is updated.
   For examples, check the `sharded_map::update_functions` namespace or the `examples/` folder in this repository.
 
+Documentation is available [here](https://skadic.github.io/sharded_map).
+
 ## Usage
 
 This is a header-only library, so you can just use the `sharded_map.hpp` header as is.
