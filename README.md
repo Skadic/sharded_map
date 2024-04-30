@@ -42,7 +42,7 @@ ctest --preset=default
 using namespace sharded_map;
 
 int main() {
-  using Map = ShardedMap<int, char, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
+  using Map = ShardedMap<size_t, size_t, std::unordered_map, update_functions::Overwrite<size_t, size_t>>;
 
   Map map(4, 128);
   // Iterate in parallel from 0 to 100'000 and insert the pair (i, 2*i) for each index
